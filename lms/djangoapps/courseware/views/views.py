@@ -393,7 +393,7 @@ def course_info(request, course_id):
         # Get the URL of the user's last position in order to display the 'where you were last' message
         context['last_accessed_courseware_url'] = None
         if SelfPacedConfiguration.current().enable_course_home_improvements:
-            context['last_accessed_courseware_url'] = get_last_accessed_courseware(course, request, user)[0]
+            context['last_accessed_courseware_url'], _ = get_last_accessed_courseware(course, request, user)
 
         now = datetime.now(UTC())
         effective_start = _adjust_start_date_for_beta_testers(user, course, course_key)
@@ -1667,7 +1667,7 @@ class CourseOutlineFragmentView(FragmentView):
         """
         course_key = CourseKey.from_string(course_id)
         course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
-        course_position = get_last_accessed_courseware(course, request, request.user)[1]
+        _, course_position = get_last_accessed_courseware(course, request, request.user)
         course_usage_key = modulestore().make_course_usage_key(course_key)
         all_blocks = get_blocks(
             request,
