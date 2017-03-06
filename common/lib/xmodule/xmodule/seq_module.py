@@ -14,7 +14,10 @@ from lxml import etree
 from xblock.core import XBlock
 from xblock.fields import Integer, Scope, Boolean, String
 from xblock.fragment import Fragment
-import newrelic.agent
+try:
+    import newrelic.agent
+except ImportError:
+    newrelic = None  # pylint: disable=invalid-name
 
 from .exceptions import NotFoundError
 from .fields import Date
@@ -385,6 +388,8 @@ class SequenceModule(SequenceFields, ProctoringFields, XModule):
         """
         Capture basic information about this sequence in New Relic.
         """
+        if not newrelic:
+            return
         newrelic.agent.add_custom_parameter('seq.block_id', unicode(self.location))
         newrelic.agent.add_custom_parameter('seq.display_name', self.display_name or '')
         newrelic.agent.add_custom_parameter('seq.position', self.position)
@@ -396,6 +401,8 @@ class SequenceModule(SequenceFields, ProctoringFields, XModule):
         the sequence as a whole. We send this information to New Relic so that
         we can do better performance analysis of courseware.
         """
+        if not newrelic:
+            return
         # Basic count of the number of Units (a.k.a. VerticalBlocks) we have in
         # this learning sequence
         newrelic.agent.add_custom_parameter('seq.num_units', len(display_items))
@@ -414,6 +421,8 @@ class SequenceModule(SequenceFields, ProctoringFields, XModule):
         """
         Capture information about the current selected Unit within the Sequence.
         """
+        if not newrelic:
+            return
         # Positions are stored with indexing starting at 1. If we get into a
         # weird state where the saved position is out of bounds (e.g. the
         # content was changed), avoid going into any details about this unit.
