@@ -393,7 +393,7 @@ def course_info(request, course_id):
         # Get the URL of the user's last position in order to display the 'where you were last' message
         context['last_accessed_courseware_url'] = None
         if SelfPacedConfiguration.current().enable_course_home_improvements:
-            context['last_accessed_courseware_url'] = get_last_accessed_courseware(course, request, user)
+            context['last_accessed_courseware_url'] = get_last_accessed_courseware(course, request, user)[0]
 
         now = datetime.now(UTC())
         effective_start = _adjust_start_date_for_beta_testers(user, course, course_key)
@@ -428,8 +428,8 @@ def course_info(request, course_id):
 
 def get_last_accessed_courseware(course, request, user):
     """
-    Return the courseware module URL that the user last accessed,
-    or None if it cannot be found.
+    Returns a tuple containing the courseware module (URL, id) that the user last accessed,
+    or (None, None) if it cannot be found.
     """
     field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
         course.id, request.user, course, depth=2
@@ -446,8 +446,8 @@ def get_last_accessed_courseware(course, request, user):
                 'chapter': chapter_module.url_name,
                 'section': section_module.url_name
             })
-            return url
-    return None
+            return (url, section_module.url_name)
+    return (None, None)
 
 
 class StaticCourseTabView(FragmentView):
@@ -1645,7 +1645,7 @@ class CourseOutlineFragmentView(FragmentView):
     Course outline fragment to be shown in the unified course view.
     """
 
-    def populate_children(self, block, all_blocks):
+    def populate_children(self, block, all_blocks, course_position):
         """
         For a passed block, replace each id in its children array with the full representation of that child,
         which will be looked up by id in the passed all_blocks dict.
@@ -1655,8 +1655,9 @@ class CourseOutlineFragmentView(FragmentView):
 
         for i in range(len(children)):
             child_id = block['children'][i]
-            child_detail = self.populate_children(all_blocks[child_id], all_blocks)
+            child_detail = self.populate_children(all_blocks[child_id], all_blocks, course_position)
             block['children'][i] = child_detail
+            block['children'][i]['current'] = course_position == child_detail['block_id']
 
         return block
 
@@ -1666,6 +1667,7 @@ class CourseOutlineFragmentView(FragmentView):
         """
         course_key = CourseKey.from_string(course_id)
         course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
+        course_position = get_last_accessed_courseware(course, request, request.user)[1]
         course_usage_key = modulestore().make_course_usage_key(course_key)
         all_blocks = get_blocks(
             request,
@@ -1682,7 +1684,7 @@ class CourseOutlineFragmentView(FragmentView):
             'csrf': csrf(request)['csrf_token'],
             'course': course,
             # Recurse through the block tree, fleshing out each child object
-            'blocks': self.populate_children(course_block_tree, all_blocks['blocks'])
+            'blocks': self.populate_children(course_block_tree, all_blocks['blocks'], course_position)
         }
         html = render_to_string('courseware/course_outline.html', context)
         return Fragment(html)
