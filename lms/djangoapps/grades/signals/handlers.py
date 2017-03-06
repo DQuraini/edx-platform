@@ -6,6 +6,7 @@ from logging import getLogger
 
 from django.dispatch import receiver
 from submissions.models import score_set, score_reset
+from xblock.scorable import ScorableXBlockMixin, Score
 
 from courseware.model_data import get_score, set_score
 from eventtracking import tracker
@@ -144,6 +145,8 @@ def score_published_handler(sender, block, user, raw_earned, raw_possible, only_
             modified=score_modified_time,
             score_db_table=ScoreDatabaseTableEnum.courseware_student_module,
         )
+        if isinstance(block, ScorableXBlockMixin):
+            block.set_score(Score(raw_earned=raw_earned, raw_possible=raw_possible))
     return update_score
 
 
