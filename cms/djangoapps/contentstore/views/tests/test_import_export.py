@@ -666,12 +666,46 @@ class ExportTestCase(CourseTestCase):
         '/export/non.1/existence_1/Run_1',  # For mongo
         '/export/course-v1:non1+existence1+Run1',  # For split
     )
-    def test_export_course_doest_not_exist(self, url):
+    def test_export_course_does_not_exist(self, url):
         """
-        Export failure if course is not exist
+        Export failure if course does not exist
         """
         resp = self.client.get_html(url)
         self.assertEquals(resp.status_code, 404)
+
+    def test_non_course_author(self):
+        """
+        Verify that users who aren't authors of the course are unable to export it
+        """
+        client, nonstaff_user = self.create_non_staff_authed_user_client()
+        resp = client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_status_non_course_author(self):
+        """
+        Verify that users who aren't authors of the course are unable to see the status of export tasks
+        """
+        client, nonstaff_user = self.create_non_staff_authed_user_client()
+        resp = client.get(self.status_url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_status_missing_record(self):
+        """
+        Attempting to get the status of an export task which isn't currently
+        represented in the database should yield a useful result
+        """
+        resp = self.client.get(self.status_url)
+        self.assertEqual(resp.status_code, 200)
+        result = json.loads(resp.content)
+        self.assertEqual(result['ExportStatus'], 0)
+
+    def test_output_non_course_author(self):
+        """
+        Verify that users who aren't authors of the course are unable to see the output of export tasks
+        """
+        client, nonstaff_user = self.create_non_staff_authed_user_client()
+        resp = client.get(reverse_course_url('export_output_handler', self.course.id))
+        self.assertEqual(resp.status_code, 403)
 
 
 @override_settings(CONTENTSTORE=TEST_DATA_CONTENTSTORE)

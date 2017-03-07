@@ -26,7 +26,7 @@ from django.utils.text import get_valid_filename
 from django.utils.translation import ugettext as _
 
 from djcelery.common import respect_language
-from user_tasks.models import UserTaskArtifact
+from user_tasks.models import UserTaskArtifact, UserTaskStatus
 from user_tasks.tasks import UserTask
 
 import dogstats_wrapper as dog_stats_api
@@ -223,7 +223,7 @@ def export_olx(self, user_id, course_key_string, language):
     # catch all exceptions so we can record useful error messages
     except Exception as exception:  # pylint: disable=broad-except
         LOGGER.exception(u'Error exporting course %s', courselike_key)
-        if self.status.state != u'Error':
+        if self.status.state != UserTaskStatus.FAILED:
             self.status.fail({'raw_error_msg': text_type(exception)})
         return
 
@@ -280,10 +280,11 @@ def create_export_tarball(course_module, course_key, context, status=None):
             'edit_unit_url': None,
             'raw_err_msg': str(exc)})
         if status:
-            status.fail({'raw_error_msg': context['raw_err_msg']})
+            status.fail(json.dumps({'raw_error_msg': context['raw_err_msg']}))
         raise
     finally:
-        shutil.rmtree(root_dir / name)
+        if os.path.exists(root_dir / name):
+            shutil.rmtree(root_dir / name)
 
     return export_file
 
