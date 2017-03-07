@@ -677,7 +677,7 @@ class ExportTestCase(CourseTestCase):
         """
         Verify that users who aren't authors of the course are unable to export it
         """
-        client, nonstaff_user = self.create_non_staff_authed_user_client()
+        client, _ = self.create_non_staff_authed_user_client()
         resp = client.get(self.url)
         self.assertEqual(resp.status_code, 403)
 
@@ -685,7 +685,7 @@ class ExportTestCase(CourseTestCase):
         """
         Verify that users who aren't authors of the course are unable to see the status of export tasks
         """
-        client, nonstaff_user = self.create_non_staff_authed_user_client()
+        client, _ = self.create_non_staff_authed_user_client()
         resp = client.get(self.status_url)
         self.assertEqual(resp.status_code, 403)
 
@@ -703,7 +703,7 @@ class ExportTestCase(CourseTestCase):
         """
         Verify that users who aren't authors of the course are unable to see the output of export tasks
         """
-        client, nonstaff_user = self.create_non_staff_authed_user_client()
+        client, _ = self.create_non_staff_authed_user_client()
         resp = client.get(reverse_course_url('export_output_handler', self.course.id))
         self.assertEqual(resp.status_code, 403)
 

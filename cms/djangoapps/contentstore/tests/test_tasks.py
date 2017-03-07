@@ -31,6 +31,9 @@ def side_effect_exception(*args, **kwargs):  # pylint: disable=unused-argument
 
 @override_settings(CONTENTSTORE=TEST_DATA_CONTENTSTORE)
 class ExportCourseTestCase(CourseTestCase):
+    """
+    Tests of the export_olx task applied to courses
+    """
 
     def test_success(self):
         """
@@ -87,13 +90,16 @@ class ExportCourseTestCase(CourseTestCase):
 
 @override_settings(CONTENTSTORE=TEST_DATA_CONTENTSTORE)
 class ExportLibraryTestCase(LibraryTestCase):
+    """
+    Tests of the export_olx task applied to libraries
+    """
 
     def test_success(self):
         """
         Verify that a routine library export task succeeds
         """
         key = str(self.lib_key)
-        result = export_olx.delay(self.user.id, key, u'en')
+        result = export_olx.delay(self.user.id, key, u'en')   # pylint: disable=no-member
         status = UserTaskStatus.objects.get(task_id=result.id)
         self.assertEqual(status.state, UserTaskStatus.SUCCEEDED)
         artifacts = UserTaskArtifact.objects.filter(status=status)
