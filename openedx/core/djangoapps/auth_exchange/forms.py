@@ -98,7 +98,8 @@ class AccessTokenExchangeForm(ScopeMixin, OAuthForm):
             self.cleaned_data["user"] = user
         else:
             # Ensure user does not re-enter the pipeline
-            self.request.social_strategy.clean_partial_pipeline()
+            partial_token = self.request.social_strategy.session_get('partial_pipeline_token')
+            self.request.social_strategy.clean_partial_pipeline(partial_token)
             raise OAuthValidationError(
                 {
                     "error": "invalid_grant",

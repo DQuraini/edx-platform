@@ -42,7 +42,8 @@ class LTIAuthBackend(BaseAuth):
         """
 
         # Clean any partial pipeline data
-        self.strategy.clean_partial_pipeline()
+        partial_token = self.strategy.session_get('partial_pipeline_token')
+        self.strategy.clean_partial_pipeline(partial_token)
 
         # Save validated LTI parameters (or None if invalid or not submitted)
         validated_lti_params = self.get_validated_lti_params(self.strategy)
