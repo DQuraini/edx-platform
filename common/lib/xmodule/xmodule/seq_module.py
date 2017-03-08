@@ -14,10 +14,6 @@ from lxml import etree
 from xblock.core import XBlock
 from xblock.fields import Integer, Scope, Boolean, String
 from xblock.fragment import Fragment
-try:
-    import newrelic.agent
-except ImportError:
-    newrelic = None  # pylint: disable=invalid-name
 
 from .exceptions import NotFoundError
 from .fields import Date
@@ -27,6 +23,12 @@ from .x_module import XModule, STUDENT_VIEW
 from .xml_module import XmlDescriptor
 
 log = logging.getLogger(__name__)
+
+try:
+    import newrelic.agent
+except ImportError:
+    newrelic = None  # pylint: disable=invalid-name
+    log.warning("Unable to load NewRelic agent module")
 
 # HACK: This shouldn't be hard-coded to two types
 # OBSOLETE: This obsoletes 'type'

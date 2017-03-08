@@ -8,10 +8,6 @@ import logging
 from collections import OrderedDict
 from functools import partial
 
-try:
-    import newrelic.agent
-except ImportError:
-    newrelic = None  # pylint: disable=invalid-name
 from capa.xqueue_interface import XQueueInterface
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -85,6 +81,11 @@ from .field_overrides import OverrideFieldData
 
 log = logging.getLogger(__name__)
 
+try:
+    import newrelic.agent
+except ImportError:
+    newrelic = None  # pylint: disable=invalid-name
+    log.warning("Unable to load NewRelic agent module")
 
 if settings.XQUEUE_INTERFACE.get('basic_auth') is not None:
     REQUESTS_AUTH = HTTPBasicAuth(*settings.XQUEUE_INTERFACE['basic_auth'])

@@ -20,10 +20,14 @@ from courseware.url_helpers import get_redirect_url_for_global_staff
 from edxmako.shortcuts import render_to_response, render_to_string
 import logging
 
+log = logging.getLogger("edx.courseware.views.index")
+
 try:
     import newrelic.agent
 except ImportError:
     newrelic = None  # pylint: disable=invalid-name
+    log.warning("Unable to load NewRelic agent module")
+
 import urllib
 
 from xblock.fragment import Fragment
@@ -58,7 +62,6 @@ from ..module_render import toc_for_course, get_module_for_descriptor
 from .views import get_current_child, registered_for_course
 
 
-log = logging.getLogger("edx.courseware.views.index")
 TEMPLATE_IMPORTS = {'urllib': urllib}
 CONTENT_DEPTH = 2
 

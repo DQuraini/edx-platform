@@ -4,10 +4,12 @@ Middleware to serve assets.
 
 import logging
 import datetime
+log = logging.getLogger(__name__)
 try:
     import newrelic.agent
 except ImportError:
     newrelic = None  # pylint: disable=invalid-name
+    log.warning("Unable to load NewRelic agent module")
 from django.http import (
     HttpResponse, HttpResponseNotModified, HttpResponseForbidden,
     HttpResponseBadRequest, HttpResponseNotFound, HttpResponsePermanentRedirect)
@@ -28,7 +30,6 @@ from .models import CourseAssetCacheTtlConfig, CdnUserAgentsConfig
 # TODO: Soon as we have a reasonable way to serialize/deserialize AssetKeys, we need
 # to change this file so instead of using course_id_partial, we're just using asset keys
 
-log = logging.getLogger(__name__)
 HTTP_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
 
 

@@ -10,10 +10,12 @@ from django.core.exceptions import ValidationError
 from django.db.utils import DatabaseError
 from logging import getLogger
 
+log = getLogger(__name__)
 try:
     import newrelic.agent
 except ImportError:
     newrelic = None  # pylint: disable=invalid-name
+    log.warning("Unable to load NewRelic agent module")
 
 from celery_utils.logged_task import LoggedTask
 from celery_utils.persist_on_failure import PersistOnFailureTask
@@ -34,8 +36,6 @@ from .constants import ScoreDatabaseTableEnum
 from .new.subsection_grade import SubsectionGradeFactory
 from .signals.signals import SUBSECTION_SCORE_CHANGED
 from .transformer import GradesTransformer
-
-log = getLogger(__name__)
 
 
 class DatabaseNotReadyError(IOError):

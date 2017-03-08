@@ -17,10 +17,14 @@ from django.shortcuts import render_to_response
 from django.template.loader import render_to_string
 from django.utils.translation import get_language_bidi
 from django.views.decorators.http import require_GET
+
+log = logging.getLogger("edx.discussions")
 try:
     import newrelic.agent
 except ImportError:
     newrelic = None  # pylint: disable=invalid-name
+    log.warning("Unable to load NewRelic module")
+
 from rest_framework import status
 
 from web_fragments.fragment import Fragment
@@ -58,7 +62,6 @@ from contextlib import contextmanager
 THREADS_PER_PAGE = 20
 INLINE_THREADS_PER_PAGE = 20
 PAGES_NEARBY_DELTA = 2
-log = logging.getLogger("edx.discussions")
 
 
 @contextmanager
